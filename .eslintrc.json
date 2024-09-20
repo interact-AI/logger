@@ -45,5 +45,6 @@
               "code": 90
             }
           ]
-    }
+    },
+    "ignorePatterns": ["dist/"]
 }
