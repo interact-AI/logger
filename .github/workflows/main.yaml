@@ -1,4 +1,4 @@
-name: lint_and_test
+name: Build and Lint
 
 concurrency:
   group: $-$
@@ -10,7 +10,7 @@ on:
       - '*'
 
 jobs:
-  lint_and_test:
+  build_and_lint:
     defaults:
       run:
         working-directory: .
