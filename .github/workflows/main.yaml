@@ -1,0 +1,33 @@
+name: lint_and_test
+
+concurrency:
+  group: $-$
+  cancel-in-progress: true
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  lint_and_test:
+    defaults:
+      run:
+        working-directory: .
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '20.11'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint
+
