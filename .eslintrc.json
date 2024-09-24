@@ -29,6 +29,10 @@
     ],
     "rules": {
         "no-unused-vars": "off",
+        "max-params": [
+            "warn",
+            5
+        ],
         "unused-imports/no-unused-imports": "error",
         "unused-imports/no-unused-vars": [
             "error",
