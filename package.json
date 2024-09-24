@@ -6,6 +6,7 @@
     "start": "tsc && node dist/app.js",
     "build": "tsc",
     "lint": "eslint .",
+    "push": "git add . && git commit -m \"push\" && git push",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
