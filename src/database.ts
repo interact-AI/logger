@@ -1,8 +1,7 @@
 import {Pool} from 'pg';
-import dotenv from 'dotenv';
+import {config} from 'dotenv';
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-dotenv?.config();
+config();
 
 const pool = new Pool({
 	user: process.env.POSTGRES_USER,

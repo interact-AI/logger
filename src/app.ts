@@ -2,10 +2,16 @@ import express from 'express';
 import processMessage from './process_message';
 import type InfoPackage from './models/info_package';
 import {connectToDb} from './database';
+import {config} from 'dotenv';
+
+config();
+
 const app = express();
-const port = 3000;
+const port = process.env.API_PORT ?? 3000;
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
+
 app.post('/messages', async (req, res) => {
 	try {
 		const bodyData = req.body as InfoPackage;
@@ -22,6 +28,6 @@ app.get('/status', (req, res) => {
 });
 
 app.listen(port, async () => {
-	console.log(`Expasync ress is listening at http://localhost:${port}`);
+	console.log(`API is listening at http://localhost:${port}`);
 	await connectToDb();
 });
