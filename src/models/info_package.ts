@@ -6,6 +6,5 @@ export default class InfoPackage {
 		public timeStamp: number,
 		public ownerId: string,
 		public phoneNumber: string,
-		public conversationName: string,
 	) {}
 }
