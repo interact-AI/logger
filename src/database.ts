@@ -26,7 +26,7 @@ export async function connectToDb(): Promise<void> {
 
 export async function createIfNotExitsConversation(
 	id: string,
-	ownerId: string,
+	ownerId: number,
 	createdAt: Date,
 	phoneNumber: string,
 ): Promise<void> {
@@ -51,7 +51,7 @@ export async function createMessage(
 	conversationId: string,
 	text: string,
 	isUser: boolean,
-	ownerId: string,
+	ownerId: number,
 	createdAt: Date,
 ): Promise<void> {
 	const query = `

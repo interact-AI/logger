@@ -4,8 +4,9 @@ import type InfoPackage from './models/info_package';
 import {connectToDb} from './database';
 const app = express();
 const port = 3000;
-
-app.post('/message', async (req, res) => {
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.post('/messages', async (req, res) => {
 	try {
 		const bodyData = req.body as InfoPackage;
 		console.log('Processing message...');
