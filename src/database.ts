@@ -55,7 +55,7 @@ export async function createMessage(
 	createdAt: Date,
 ): Promise<void> {
 	const query = `
-	INSERT INTO messages (conversation_id, text, is_user, owner_id, created_at)
+	INSERT INTO messages (conversation_id, message_content, is_user, owner_id, created_at)
 	VALUES ($1, $2, $3, $4, $5)
   `;
 	const values = [conversationId, text, isUser, ownerId, createdAt];
