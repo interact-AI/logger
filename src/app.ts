@@ -1,33 +1,57 @@
-import express from 'express';
+import {
+	type ProcessErrorArgs,
+	ServiceBusClient,
+	type ServiceBusMessage,
+	type ServiceBusReceiver,
+} from '@azure/service-bus';
 import processMessage from './process_message';
 import type InfoPackage from './models/info_package';
-import {connectToDb} from './database';
-import {config} from 'dotenv';
 
-config();
+const connectionString = process.env.QUEUE_CON_STRING!;
 
-const app = express();
-const port = process.env.API_PORT ?? 3000;
+const queueName = process.env.QUEUE_NAME!;
 
-app.use(express.json());
-app.use(express.urlencoded({extended: true}));
+async function main(): Promise<void> {
+	const serviceBusClient = new ServiceBusClient(
+		connectionString,
+	);
 
-app.post('/messages', async (req, res) => {
-	try {
-		const bodyData = req.body as InfoPackage;
-		console.log('Processing message...');
-		await processMessage(bodyData);
-		res.send('Message processed');
-	} catch (e) {
-		res.status(500).send(e.message);
-	}
-});
+	const serviceBusReceiver: ServiceBusReceiver
+		= serviceBusClient.createReceiver(queueName);
 
-app.get('/status', (req, res) => {
-	res.send('Server is running');
-});
+	const myMessageHandler = async (
+		messageReceived: ServiceBusMessage,
+	): Promise<void> => {
+		console.log(`Received body: ${JSON.stringify(messageReceived.body)}`);
+		if (messageReceived.body === undefined) {
+			return;
+		}
 
-app.listen(port, async () => {
-	console.log(`API is listening at http://localhost:${port}`);
-	await connectToDb();
+		const isBodyList = Array.isArray(messageReceived.body);
+		if (isBodyList) {
+			for (const message of messageReceived.body as InfoPackage[]) {
+				// eslint-disable-next-line no-await-in-loop
+				await processMessage(message);
+			}
+
+			return;
+		}
+
+		await processMessage(messageReceived.body as InfoPackage);
+	};
+
+	const myErrorHandler = async (error: ProcessErrorArgs): Promise<void> => {
+		console.log(error);
+	};
+
+	serviceBusReceiver.subscribe({
+		processMessage: myMessageHandler,
+		processError: myErrorHandler,
+	});
+	console.log('Listening for messages...');
+}
+
+main().catch((err: Error) => {
+	console.log('Error occurred: ', err);
+	process.exit(1);
 });
