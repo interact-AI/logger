@@ -29,6 +29,8 @@
     ],
     "rules": {
         "no-unused-vars": "off",
+        "max-params": "off",
+        "no-unsafe-call": "off",
         "unused-imports/no-unused-imports": "error",
         "unused-imports/no-unused-vars": [
             "error",
