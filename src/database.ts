@@ -12,7 +12,7 @@ const pool = new Pool({
 });
 
 export async function connectToDb(): Promise<void> {
-	console.log('Connecting to the database...');
+	console.log('Connecting to the database... host: ' + process.env.POSTGRES_HOST);
 	try {
 		const client = await pool.connect();
 		console.log('Connected to the database');
