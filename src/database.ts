@@ -6,13 +6,15 @@ config();
 
 let pool: ConnectionPool;
 
+const dbConnectionString = process.env.DB_CONN_STRING;
+
 export async function connectToDb(): Promise<void> {
 	console.log(`Connecting to the database... host: 
-		${process.env.DB_CONN_STRING?.split(';')[1].split('=')[1]}`,
+		${dbConnectionString?.split(';')[1].split('=')[1]}`,
 	);
 
 	try {
-		const localPool = await connect(process.env.DB_CONN_STRING!);
+		const localPool = await connect(dbConnectionString!);
 		await localPool.connect();
 		pool = localPool;
 		console.log('Connected to Azure SQL Database');
