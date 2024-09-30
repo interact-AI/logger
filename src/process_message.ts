@@ -2,8 +2,8 @@ import {createIfNotExitsConversation, createMessage} from './database';
 import type InfoPackage from './models/info_package';
 
 export default async function processMessage(data: InfoPackage): Promise<void> {
-	console.log('Creating conversation...');
 	const parseDate = new Date(data.timeStamp * 1000);
+	console.log('Checking if conversation exits...');
 	await createIfNotExitsConversation(data.conversationId,
 		data.ownerId,
 		parseDate,

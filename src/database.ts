@@ -1,25 +1,23 @@
-import {Pool} from 'pg';
+/* eslint-disable guard-for-in */
+import {connect, type ConnectionPool, type IResult} from 'mssql';
 import {config} from 'dotenv';
 
 config();
 
-const pool = new Pool({
-	user: process.env.POSTGRES_USER,
-	host: process.env.POSTGRES_HOST ?? '0.0.0.0',
-	database: process.env.POSTGRES_DB,
-	password: process.env.POSTGRES_PASSWORD,
-	port: parseInt(process.env.POSTGRES_PORT ?? '5432', 10),
-});
+let pool: ConnectionPool;
 
 export async function connectToDb(): Promise<void> {
-	console.log('Connecting to the database... host: ' + process.env.POSTGRES_HOST);
+	console.log(`Connecting to the database... host: 
+		${process.env.DB_CONN_STRING?.split(';')[1].split('=')[1]}`,
+	);
+
 	try {
-		const client = await pool.connect();
-		console.log('Connected to the database');
-		client.release();
-	} catch (err) {
-		console.error('Error connecting to the database', err);
-		process.exit(1);
+		const localPool = await connect(process.env.DB_CONN_STRING!);
+		await localPool.connect();
+		pool = localPool;
+		console.log('Connected to Azure SQL Database');
+	} catch (error) {
+		console.error('Failed to connect to Azure SQL Database:', error);
 	}
 }
 
@@ -35,37 +33,54 @@ export async function createIfNotExitsConversation(
 		return;
 	}
 
+	console.log('Creating conversation...');
+
 	const query = `
 		INSERT INTO conversations 
 		(id, owner_id, created_at, phone_number, conversation_name)
-		VALUES ($1, $2, $3, $4, $5)
+		VALUES (@id, @ownerId, @createdAt, @phoneNumber, @conversationName)
 	  `;
-	const values = [id, ownerId, createdAt, phoneNumber, ''];
+	const values = {
+		id, ownerId, createdAt, phoneNumber, conversationName: '',
+	};
 
-	await pool.query(query, values);
+	await executeQuery(query, values);
 	console.log(`Conversation with ID ${id} created successfully.`);
 }
 
 export async function createMessage(
 	conversationId: string,
-	text: string,
+	messageContent: string,
 	isUser: boolean,
 	ownerId: number,
 	createdAt: Date,
 ): Promise<void> {
 	const query = `
 	INSERT INTO messages (conversation_id, message_content, is_user, owner_id, created_at)
-	VALUES ($1, $2, $3, $4, $5)
+	VALUES (@conversationId, @messageContent, @isUser, @ownerId, @createdAt)
   `;
-	const values = [conversationId, text, isUser, ownerId, createdAt];
+	const values = {
+		conversationId, messageContent, isUser, ownerId, createdAt,
+	};
 
-	await pool.query(query, values);
+	await executeQuery(query, values);
 	console.log('Message created successfully.');
 }
 
 async function isConversationCreated(conversationId: string): Promise<boolean> {
-	const query = 'SELECT COUNT(1) FROM conversations WHERE id = $1';
-	const result = await pool.query(query, [conversationId]);
+	const query = 'SELECT * FROM conversations WHERE id = @conversationId';
+	const result = await executeQuery(query, {conversationId});
+	return result.recordset.length > 0;
+}
 
-	return result.rows[0].count > 0;
+async function executeQuery(query: string, params: Record<string, any>):
+Promise<IResult<any>> {
+	const request = pool.request();
+
+	for (const param in params) {
+		request.input(param, params[param]);
+	}
+
+	const result = await request.query(query);
+	return result;
 }
